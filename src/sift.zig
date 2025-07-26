@@ -12,7 +12,7 @@ fn Vectors(comptime datatype: enum { float, int }) type {
         file: std.fs.File,
         contents: []align(std.heap.page_size_min) u8,
 
-        fn loadFile(path: []const u8) !Self {
+        pub fn loadFile(path: []const u8) !Self {
             const ext = std.fs.path.extension(path);
             if (!std.mem.eql(u8, expectedFileExt(), ext)) {
                 return error.UnexpectedFileExtension;
@@ -38,7 +38,7 @@ fn Vectors(comptime datatype: enum { float, int }) type {
             };
         }
 
-        fn deinit(self: *Self) void {
+        pub fn deinit(self: *Self) void {
             std.posix.munmap(self.contents);
             self.file.close();
             self.* = undefined;
@@ -51,7 +51,7 @@ fn Vectors(comptime datatype: enum { float, int }) type {
             };
         }
 
-        fn iterator(self: *const Self) Iterator {
+        pub fn iterator(self: *const Self) Iterator {
             return .{
                 .vectors = self,
                 .offset = 0,
@@ -62,7 +62,7 @@ fn Vectors(comptime datatype: enum { float, int }) type {
             vectors: *const Self,
             offset: usize,
 
-            fn next(self: *Iterator) ?vectorType() {
+            pub fn next(self: *Iterator) ?vectorType() {
                 const contents = self.vectors.contents;
                 if (self.offset >= contents.len) {
                     return null;
@@ -106,10 +106,10 @@ fn Vectors(comptime datatype: enum { float, int }) type {
 }
 
 /// Helper type for parsing .fvecs files.
-const FVecs = Vectors(.float);
+pub const FVecs = Vectors(.float);
 
 /// Helper type for parsing .ivecs files.
-const IVecs = Vectors(.int);
+pub const IVecs = Vectors(.int);
 
 test "load .fvecs file" {
     const path = "sift_data/siftsmall/siftsmall_base.fvecs";
