@@ -1,3 +1,6 @@
 .zig-cache/
 zig-out/
 *.o
+sift_data/
+.vscode/
+.DS_Store

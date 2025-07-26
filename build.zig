@@ -17,6 +17,12 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(lib);
 
+    const download_sift = b.addSystemCommand(&.{"bash"});
+    download_sift.addArgs(&.{
+        "sift.sh",
+        "siftsmall",
+    });
+
     const test_filters = b.option(
         []const []const u8,
         "test-filters",
@@ -27,6 +33,7 @@ pub fn build(b: *std.Build) void {
         .root_module = lib_mod,
         .filters = test_filters,
     });
+    lib_unit_tests.step.dependOn(&download_sift.step);
 
     const run_lib_unit_tests = b.addRunArtifact(lib_unit_tests);
 
