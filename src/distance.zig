@@ -6,7 +6,7 @@ const sift = @import("sift.zig");
 
 /// SIMD-optimized implementation of squared Euclidean distance.
 /// Asserts that the two slices are of equal length.
-fn euclideanSquared(a: []const f32, b: []const f32) f32 {
+pub fn euclideanSquared(a: []const f32, b: []const f32) f32 {
     @setFloatMode(.optimized);
     assert(a.len == b.len);
     var sum: f32 = 0;
@@ -51,7 +51,7 @@ pub fn TopK(comptime T: type) type {
     return struct {
         const Self = @This();
 
-        const Item = struct {
+        pub const Item = struct {
             distance: f32,
             value: T,
         };
@@ -66,7 +66,7 @@ pub fn TopK(comptime T: type) type {
         k: usize,
 
         /// Creates a new TopK heap that can hold up to `k` elements.
-        fn init(gpa: std.mem.Allocator, k: usize) !Self {
+        pub fn init(gpa: std.mem.Allocator, k: usize) !Self {
             assert(k > 0);
             var maxq = QueueType.init(gpa, {});
             errdefer maxq.deinit();
@@ -74,14 +74,14 @@ pub fn TopK(comptime T: type) type {
             return .{ .maxq = maxq, .k = k };
         }
 
-        fn deinit(self: *Self) void {
+        pub fn deinit(self: *Self) void {
             self.maxq.deinit();
             self.* = undefined;
         }
 
         /// Pushes a new value to the heap, maintaining the top-k elements.
         /// Returns true if the value was added to the heap, false if it didn't change the heap.
-        fn push(self: *Self, value: T, distance: f32) bool {
+        pub fn push(self: *Self, value: T, distance: f32) bool {
             if (self.maxq.count() < self.k) {
                 self.maxq.add(.{ .value = value, .distance = distance }) catch unreachable;
                 return true;
@@ -96,26 +96,27 @@ pub fn TopK(comptime T: type) type {
         }
 
         /// Removes the largest item (by distance) from the heap.
-        fn popLargest(self: *Self) ?Item {
+        pub fn popLargest(self: *Self) ?Item {
             return self.maxq.removeOrNull();
         }
 
         /// Drains the heap into a slice, ordered by distance ascending.
-        fn drainIntoSlice(self: *Self, slice: []Item) void {
-            var r = self.maxq.count();
-            assert(slice.len >= r);
+        pub fn drainIntoSlice(self: *Self, slice: []Item) []const Item {
+            const c = self.maxq.count();
+            assert(slice.len >= c);
+            var r = c;
             while (r > 0) : (r -= 1) {
                 slice[r - 1] = self.maxq.remove();
             }
             assert(self.maxq.count() == 0);
+            return slice[0..c];
         }
 
         /// Same as `drainIntoSlice`, but allocates the slice using the provided allocator.
         /// Caller is responsible for deallocating the slice.
         fn drainIntoSliceAlloc(self: *Self, gpa: std.mem.Allocator) ![]Item {
             const slice = try gpa.alloc(Item, self.maxq.count());
-            self.drainIntoSlice(slice);
-            return slice;
+            return self.drainIntoSlice(slice);
         }
     };
 }

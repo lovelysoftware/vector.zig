@@ -3,7 +3,18 @@
     .version = "0.0.0",
     .fingerprint = 0x1b6e485b730addca, // Changing this has security and trust implications.
     .minimum_zig_version = "0.14.1",
-    .dependencies = .{},
+    .dependencies = .{
+        .sqlite = .{
+            .url = "https://www.sqlite.org/2025/sqlite-amalgamation-3500300.zip",
+            .hash = "N-V-__8AALWXqACdF8GwNnODSqSNYT3WMD4s5FWtLhWDnfqc",
+            .lazy = true, // Only used for the iMessage example.
+        },
+        .objc = .{
+            .url = "git+https://github.com/mitchellh/zig-objc#1ab06dde464e24bd4db56f6639de92ca16478bc5",
+            .hash = "zig_objc-0.0.0-Ir_SpwkUAQBuD4EZduOtQ4LYQpNizYhYBMsqC60IuU9L",
+            .lazy = true, // Only used for the iMessage example.
+        },
+    },
     .paths = .{
         "build.zig",
         "build.zig.zon",
